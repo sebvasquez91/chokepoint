@@ -2,11 +2,16 @@
 
 **Play it: https://sebvasquez91.github.io/chokepoint/** · [How it was made](https://sebvasquez91.github.io/chokepoint/pipeline.html)
 
-CHOKEPOINT is a playable rendition of one piece of journalism — Virginia Heffernan's
+CHOKEPOINT is one piece of journalism — Virginia Heffernan's
 [“I Saw the Face of God in a Semiconductor Factory”](https://www.wired.com/story/i-saw-the-face-of-god-in-a-tsmc-factory/)
-(WIRED, March 2023). You steer Taiwan's strategy across six eras, from umbrella factories to the centre
-of the digital world, and try to build the Silicon Shield. Every rule in the game cites the article:
-tap the ¶ chips to read the exact sentences.
+(WIRED, March 2023) — rendered as **two playable formats from a single story model**:
+
+- **The narrative RPG** (main, `/`): you play a WIRED journalist retracing the article's pilgrimage —
+  a 2D RPG with characters, quests and dialogue. Kramer must refuse you three times; the fab opens only
+  when your notebook proves you understand the island, the litho and the stakes. 63 verbatim lines carry
+  inline ¶ receipts; ~25–40 minutes.
+- **The strategy edition** (format A, [`/strategy.html`](https://sebvasquez91.github.io/chokepoint/strategy.html)):
+  six strategic decisions from umbrella factories to the Silicon Shield, with a break-the-chain epilogue; ~6 minutes.
 
 This is **demonstrator №1 of PressPlay**, an engine by [Kita](https://getkita.org) that turns journalism
 into playable interactive experiences — analysis → format selection → constrained generation → provenance,
@@ -22,6 +27,7 @@ end-to-end in [`pipeline/`](pipeline/):
 | 05 Provenance | [`pipeline/05-content-provenance.md`](pipeline/05-content-provenance.md) — every element → source span |
 | 06 Fidelity check | [`pipeline/06-fidelity-check.md`](pipeline/06-fidelity-check.md) — 10 distortion risks & mitigations |
 | 07 Build notes | [`pipeline/07-build-notes.md`](pipeline/07-build-notes.md) — what was manual, what the engine automates |
+| 08 Narrative design (RPG) | [`pipeline/08-narrative-design.md`](pipeline/08-narrative-design.md) — the format override: story arc, characters, quests, real-person integrity rules |
 
 ## Integrity by construction
 
@@ -34,10 +40,16 @@ end-to-end in [`pipeline/`](pipeline/):
 
 ## Architecture (the product claim, in code)
 
-- [`content.js`](content.js) — pure data: what the engine generates *per article*.
-- [`app.js`](app.js) — the reusable era-strategy mechanic template (engine IP): state machine, meters,
-  receipts sheet, chain map. A different article on this template is a different game.
-- No frameworks, no build step, no tracking, no external requests. Static hosting anywhere.
+Two mechanic templates, one data discipline — per-article content lives in data files the engine
+generates; the runtimes are reusable engine IP:
+
+- RPG: [`rpg-story.js`](rpg-story.js) + [`rpg-data.js`](rpg-data.js) (generated per article: 130 receipts,
+  dialogue trees, maps, cast) → rendered by [`rpg.js`](rpg.js) (the narrative-RPG template: canvas world,
+  dialogue system, quests, notebook, cutscenes, minigames).
+- Strategy: [`content.js`](content.js) (generated per article) → rendered by [`app.js`](app.js)
+  (the era-strategy template).
+
+No frameworks, no build step, no tracking, no external requests. Static hosting anywhere.
 
 Run locally: any static server, e.g. `python3 -m http.server 4173` then open `http://localhost:4173`.
 

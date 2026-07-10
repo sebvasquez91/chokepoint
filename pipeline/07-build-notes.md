@@ -32,4 +32,18 @@ Bespoke newsgames of comparable polish are reported in the tens of thousands of 
 4. **Copy generation constraint**: "Game copy may only assert facts present in the claim table; direct quotes verbatim with their ¶ ref; preserve qualifiers; counterfactual outcomes must be labelled modelled and derive only from stated article logic."
 5. **Fidelity pass**: adversarial checklist from stage-02 flags + "what could this mechanic imply that the article does not?"
 
-Full artefacts: [02-story-model.md](02-story-model.md) · [03-format-selection.md](03-format-selection.md) · [04-mechanic-spec.md](04-mechanic-spec.md) · [05-content-provenance.md](05-content-provenance.md) · [06-fidelity-check.md](06-fidelity-check.md)
+Full artefacts: [02-story-model.md](02-story-model.md) · [03-format-selection.md](03-format-selection.md) · [04-mechanic-spec.md](04-mechanic-spec.md) · [05-content-provenance.md](05-content-provenance.md) · [06-fidelity-check.md](06-fidelity-check.md) · [08-narrative-design.md](08-narrative-design.md)
+
+## Addendum — build 2 (the narrative RPG)
+
+The format override (stage 08) was executed as a second render of the SAME story model: no re-analysis of the
+article was needed — the claim table, quotes, theses and sensitivity flags of stage 02 fed the RPG directly.
+New work was: the narrative design document (08), a second mechanic template (`rpg.js` — canvas world, dialogue
+trees, quests/notebook, cutscenes, two micro-interactions), and per-article content data (`rpg-data.js`,
+`rpg-story.js`: 17 scenes, 18 parametric characters, 77 dialogue trees, 130 verbatim receipts, 63 ¶-tagged
+spoken lines, 21 notebook insights). Hand-guided cost: roughly one further working day. Engine implication:
+**templates amortise** — the second format cost no analysis and no provenance rework, only template + copy,
+and the template is now reusable for any article whose story model carries a protagonist-quest signal.
+Verification: automated full-path playthrough (all 11 quests to epilogue), per-scene render smoke test,
+gate-order checks (three refusals enforce sequence), and a low-frame-rate resilience pass (hidden-tab tick
+fallback; forgiving minigame windows).

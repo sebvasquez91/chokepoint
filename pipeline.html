@@ -45,10 +45,14 @@
         Kita’s engine for turning journalism into playable experiences, with the journalist kept in editorial control.</p>
       <div class="stat-row" aria-label="Key numbers">
         <div class="stat"><b>8,935</b><span>words in</span></div>
-        <div class="stat"><b>1</b><span>playable experience out</span></div>
-        <div class="stat"><b>60</b><span>quotes extracted</span></div>
-        <div class="stat"><b>53</b><span>receipts in-game</span></div>
+        <div class="stat"><b>2</b><span>playable formats out</span></div>
+        <div class="stat"><b>130</b><span>quotes extracted</span></div>
+        <div class="stat"><b>63</b><span>verbatim lines in the RPG</span></div>
       </div>
+      <p class="lede" style="text-align:center;margin-top:16px"><strong>One story model, two games.</strong> The same stage-02 analysis has been rendered through two different mechanic templates:
+        <a href="index.html">a narrative RPG</a> (characters, quests, three refusals) and
+        <a href="strategy.html">an era-strategy game</a> (six decisions, a shield gauge). That swap — new format, no re-analysis —
+        is the engine's template-library claim, demonstrated.</p>
     </div>
 
     <div class="flow">
@@ -121,6 +125,16 @@
         <h3>Build notes — what was manual, what the engine automates</h3>
         <p>The honest ledger for the R&amp;D programme: which stages ran near-automatically for this demonstrator, which needed human judgement, and what that implies for the engine’s architecture and research plan.</p>
         <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/07-build-notes.md" target="_blank" rel="noopener">07-build-notes.md</a></p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 08</span>
+        <h3>Format override — the narrative RPG</h3>
+        <p>After playtesting format A, the commissioning editor requested a different template: <em>“a 2D narrative RPG with characters, dialogues, dynamics and quests.”</em> In the engine this is a supported editorial input — the ranking proposes, the editor disposes. The same story model was re-rendered through the narrative-RPG template: the article’s own pilgrimage becomes the main quest, its three braided threads become the knowledge pillars that unlock the fab, its people speak their reported lines (<strong>63 verbatim, every one ¶-tagged</strong>), and its published correction, euphemism convention and ambivalence all survive as design rules. Real-person dramatisation rules are logged in the design document.</p>
+        <p class="engine-does">In the engine</p>
+        <p>A template library: analysis once, formats many. Each template is built by humans once and parameterised per article thereafter.</p>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/08-narrative-design.md" target="_blank" rel="noopener">08-narrative-design.md</a> — full story arc, character roster, quest design, integrity rules v2</p>
       </div>
     </div>
 

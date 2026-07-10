@@ -26,6 +26,17 @@ Score = how well the article's *grounded* content can drive that format without 
 
 **Counterfactual policy** (feeds stage 06): options the history didn't take get outcomes *modelled from the article's stated logic*, and the UI must mark these visually as **"modelled — not reported in the article"**, distinct from receipt-backed outcomes. The truth-path is calibrated to be the optimum, so mastering the game = comprehending the article, and replays converge on what actually happened.
 
+## Addendum (build 2) — editorial format override
+
+After playtesting the shipped era-strategy build, the commissioning editor overrode the format choice:
+*"a 2D narrative RPG with relevant characters, dialogues, dynamics and quests."* Note what this validates
+rather than contradicts: the role-taking decision pattern scored 5/5 above precisely because the article is
+a first-person quest narrative — the RPG template is the fuller rendering of the same signal (protagonist,
+gatekeeper, three refusals, transformation ending, all in the source). The engine requirement this adds:
+**format selection is a proposal; the editor picks the template, and the story model must be renderable
+through more than one.** Both formats now ship from the same stage-02 analysis (see
+[08-narrative-design.md](08-narrative-design.md)) — the template-library architecture, demonstrated.
+
 ## Method note for the R&D plan (honest record)
 
 The human pre-selection for this PoC — made *before* the story model existed — was an operational logistics sim ("run the supply chain through shocks"). The grounded analysis overturned it: this article cannot support that format without importing external facts. **Format selection must happen downstream of story-model extraction, not from the headline/topic** — a newsroom user would have made the same initial mis-guess. This ordering constraint is now a design requirement for the engine (WP2 before WP3 in the pipeline, per article), and this file is the worked example of why.

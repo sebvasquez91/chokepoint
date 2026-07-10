@@ -2,29 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>CHOKEPOINT — a playable long-read</title>
-  <meta name="description" content="How an island made itself unconquerable. A playable rendition of Virginia Heffernan's 'I Saw the Face of God in a Semiconductor Factory' (WIRED, 2023) — every rule in the game cites the article.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>CHOKEPOINT — a playable long-read (narrative RPG)</title>
+  <meta name="description" content="A narrative RPG rendition of Virginia Heffernan's 'I Saw the Face of God in a Semiconductor Factory' (WIRED, 2023). Get inside the most guarded building on Earth — by understanding it. Every fact carries a receipt.">
   <meta name="theme-color" content="#0b0e15">
-  <meta property="og:title" content="CHOKEPOINT — a playable long-read">
-  <meta property="og:description" content="You are Taiwan's strategy. Six decisions across six eras. Build the Silicon Shield — every rule cites the article it was made from.">
+  <meta property="og:title" content="CHOKEPOINT — the Sacred Mountain">
+  <meta property="og:description" content="A 2D narrative RPG generated from one piece of journalism. Characters, quests and three refusals — every fact carries a ¶ receipt to the article.">
   <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m3 19 6.5-11L13 13l2-3 6 9H3Z' fill='none' stroke='%23d9a441' stroke-width='1.8'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="rpg.css">
 </head>
 <body>
-  <div id="hud" class="hidden"></div>
-  <main id="app">
-    <noscript>
-      <div style="max-width:590px;margin:60px auto;padding:0 18px;font-family:Georgia,serif">
-        <h1>CHOKEPOINT</h1>
-        <p>This playable long-read needs JavaScript. The article it renders is here:
-          <a style="color:#a08df5" href="https://www.wired.com/story/i-saw-the-face-of-god-in-a-tsmc-factory/">
-            “I Saw the Face of God in a Semiconductor Factory” — Virginia Heffernan, WIRED</a>.</p>
-      </div>
-    </noscript>
-  </main>
-  <script src="content.js"></script>
-  <script src="app.js"></script>
+  <div id="stage"><canvas id="game" width="320" height="208" aria-label="CHOKEPOINT game world"></canvas></div>
+  <div id="hud-rpg" class="hidden"></div>
+  <div id="touch" class="hidden" aria-hidden="true">
+    <div class="dpad">
+      <button data-dir="up" aria-label="Up">▲</button>
+      <button data-dir="left" aria-label="Left">◀</button>
+      <button data-dir="right" aria-label="Right">▶</button>
+      <button data-dir="down" aria-label="Down">▼</button>
+    </div>
+    <button class="abtn" data-a aria-label="Interact">A</button>
+  </div>
+  <div id="dialog" class="hidden" role="log" aria-live="polite"></div>
+  <div id="panels" class="hidden"></div>
+  <div id="card" aria-live="polite"></div>
+  <div id="fade"></div>
+  <noscript>
+    <div style="position:fixed;inset:0;background:#0b0e15;color:#e9e6dd;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Georgia,serif">
+      <p>CHOKEPOINT needs JavaScript. The article it renders is here:
+        <a style="color:#a08df5" href="https://www.wired.com/story/i-saw-the-face-of-god-in-a-tsmc-factory/">“I Saw the Face of God in a Semiconductor Factory” — WIRED</a>.</p>
+    </div>
+  </noscript>
+  <script src="rpg-data.js"></script>
+  <script src="rpg-story.js"></script>
+  <script src="rpg.js"></script>
 </body>
 </html>
