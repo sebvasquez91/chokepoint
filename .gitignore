@@ -1,0 +1,3 @@
+# Full article text stays local (rights): the public repo ships the paragraph map instead.
+pipeline/01-article.md
+.DS_Store

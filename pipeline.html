@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How CHOKEPOINT was made — the PressPlay pipeline</title>
+  <meta name="description" content="The engine view: how one piece of journalism became a playable experience, stage by stage — analysis, format selection, constrained generation, provenance.">
+  <meta name="theme-color" content="#0b0e15">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m3 19 6.5-11L13 13l2-3 6 9H3Z' fill='none' stroke='%23a08df5' stroke-width='1.8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .doc { max-width: 660px; margin: 0 auto; padding: 40px 18px 80px; }
+    .doc-head { text-align: center; margin-bottom: 34px; }
+    .stage { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px 17px; margin-top: 18px; text-align: left; position: relative; }
+    .stage-no { position: absolute; top: -11px; left: 14px; background: var(--violet-deep); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; border-radius: 6px; padding: 3px 8px; }
+    .stage h3 { font-family: var(--serif); margin: 6px 0 8px; font-size: 21px; }
+    .stage p, .stage li { font-size: 14.5px; }
+    .stage .engine-does { color: var(--gold); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin: 12px 0 4px; }
+    .stage .artefact { border-left: 3px solid var(--violet-deep); padding: 2px 0 2px 12px; color: var(--ink-dim); font-size: 13.5px; }
+    .stage .artefact a { font-weight: 600; }
+    .flow { display: grid; gap: 6px; margin: 24px 0 6px; }
+    .flow-arrow { text-align: center; color: var(--violet); opacity: 0.7; font-size: 15px; line-height: 1; }
+    .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .stat { flex: 1 1 120px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-align: center; }
+    .stat b { display: block; font-family: var(--serif); font-size: 24px; color: var(--gold); }
+    .stat span { font-size: 11.5px; color: var(--ink-dim); letter-spacing: 0.04em; }
+    table.mini { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    table.mini th, table.mini td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.mini th { color: var(--ink-dim); font-weight: 600; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .back { display: inline-block; margin-bottom: 18px; font-size: 13.5px; }
+    .foot { text-align: center; margin-top: 36px; }
+  </style>
+</head>
+<body>
+  <main class="doc">
+    <a class="back" href="index.html">← back to the game</a>
+    <div class="doc-head">
+      <p class="kicker">The engine view</p>
+      <h1 class="title" style="font-size:clamp(30px,8vw,44px)">How this was made</h1>
+      <p class="subtitle">one article in, one playable experience out — stage by stage</p>
+      <p class="lede" style="text-align:center">CHOKEPOINT was generated from a single piece of journalism —
+        <a href="https://www.wired.com/story/i-saw-the-face-of-god-in-a-tsmc-factory/" target="_blank" rel="noopener">“I Saw the Face of God in a Semiconductor Factory”</a>
+        (Virginia Heffernan, WIRED, 2023) — through the documented pipeline below. For this demonstrator the stages were run
+        with a human editor guiding an AI system; the R&amp;D programme behind it automates each stage inside <strong>PressPlay</strong>,
+        Kita’s engine for turning journalism into playable experiences, with the journalist kept in editorial control.</p>
+      <div class="stat-row" aria-label="Key numbers">
+        <div class="stat"><b>8,935</b><span>words in</span></div>
+        <div class="stat"><b>1</b><span>playable experience out</span></div>
+        <div class="stat"><b>60</b><span>quotes extracted</span></div>
+        <div class="stat"><b>53</b><span>receipts in-game</span></div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="stage">
+        <span class="stage-no">STAGE 01</span>
+        <h3>Source capture</h3>
+        <p>The article is captured with paragraph-level addressing — 108 paragraphs, each with a stable ID (<code>P001–P108</code>). Those IDs become the provenance backbone: every downstream artefact, and every ¶ chip in the game, points back to them.</p>
+        <p class="engine-does">In the engine</p>
+        <p>Ingestion from CMS, URL or file; rights metadata; the publisher’s own content, on the publisher’s own terms.</p>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/01-article.public.md" target="_blank" rel="noopener">01-article.public.md</a> (paragraph map; full text stays local out of respect for WIRED’s copyright)</p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 02</span>
+        <h3>Story model — what does the article actually assert?</h3>
+        <p>Schema-constrained extraction of the article’s entities, quantities, quotes, causal claims and theses — where <strong>every field must cite a paragraph span</strong>. Ungrounded output is rejected, not guessed: the no-invented-facts rule is enforced at the data layer, before any game exists.</p>
+        <table class="mini">
+          <tr><th>Extracted</th><th>Example (with source)</th></tr>
+          <tr><td>50 claims</td><td>“~92% of the world’s most advanced chips” → P002</td></tr>
+          <tr><td>6 theses</td><td>“Manufactured indispensability” → P060, P068</td></tr>
+          <tr><td>10 causal edges</td><td>pure-play → trust → crux position → shield → P070, P015</td></tr>
+          <tr><td>5 sensitivity flags</td><td>conflict framing, viewpoint, corrections (P106)…</td></tr>
+        </table>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/02-story-model.md" target="_blank" rel="noopener">02-story-model.md</a></p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 03</span>
+        <h3>Format selection — what kind of play fits this journalism?</h3>
+        <p>The story model is scored against a taxonomy of interaction patterns. The binding rule: a format that would need facts the article doesn’t contain scores low, <em>however tempting the topic</em>. This article’s causal meat is historical-strategic, so an operational logistics sim (the obvious guess from the headline) lost to:</p>
+        <table class="mini">
+          <tr><th>Format</th><th>Score</th></tr>
+          <tr><td><strong>Role-taking decision simulation across historical eras</strong></td><td><strong>5/5 — chosen</strong></td></tr>
+          <tr><td>Dependency-network “break the chain” (epilogue)</td><td>4/5 — chosen as coda</td></tr>
+          <tr><td>Timeline reconstruction</td><td>3/5</td></tr>
+          <tr><td>Operational logistics sim</td><td>2/5 — would require external facts</td></tr>
+        </table>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/03-format-selection.md" target="_blank" rel="noopener">03-format-selection.md</a> — including the honest record of the human’s wrong first guess</p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 04</span>
+        <h3>Mechanic spec — the game, parameterised by the article</h3>
+        <p>The chosen template (era-strategy) is instantiated: six decision nodes from the article’s own arc (umbrellas → abandonment → apprenticeship → pure-play → the litho crisis → Arizona), four meters named in the article’s value language, and a scoring rule with a designed property: <strong>the historically true path is the optimal strategy</strong> — mastering the game means comprehending the article.</p>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/04-mechanic-spec.md" target="_blank" rel="noopener">04-mechanic-spec.md</a></p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 05</span>
+        <h3>Constrained generation — content as data</h3>
+        <p>All era briefs, options, outcomes and receipts are generated into a single data file, <a href="https://github.com/sebvasquez91/chokepoint/blob/main/content.js" target="_blank" rel="noopener"><code>content.js</code></a> — separate from the reusable game runtime (<code>app.js</code>). That split is the product: <strong>the runtime is the engine’s mechanic template; the data file is what gets generated per article.</strong> A different article, same template, different game.</p>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/05-content-provenance.md" target="_blank" rel="noopener">05-content-provenance.md</a> — every in-game element mapped to its source span</p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 06</span>
+        <h3>Integrity check — journalism’s non-negotiables</h3>
+        <p>A distortion review against the source: could the game imply anything the article doesn’t support? Counterfactual choices get visible <span class="badge badge-modelled" style="pointer-events:none">MODELLED</span> badges; conflict is discussed only in sourced quotes, never simulated; the article’s published correction is honoured; even a source-internal inconsistency (the article calls Savary “Jacques” in one paragraph and “Thomas” in another) is flagged rather than silently resolved.</p>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/06-fidelity-check.md" target="_blank" rel="noopener">06-fidelity-check.md</a></p>
+      </div>
+      <p class="flow-arrow">▼</p>
+
+      <div class="stage">
+        <span class="stage-no">STAGE 07</span>
+        <h3>Build notes — what was manual, what the engine automates</h3>
+        <p>The honest ledger for the R&amp;D programme: which stages ran near-automatically for this demonstrator, which needed human judgement, and what that implies for the engine’s architecture and research plan.</p>
+        <p class="artefact">Artefact: <a href="https://github.com/sebvasquez91/chokepoint/blob/main/pipeline/07-build-notes.md" target="_blank" rel="noopener">07-build-notes.md</a></p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <a class="btn btn-primary" href="index.html">Play CHOKEPOINT</a>
+      <p class="attribution" style="margin-top:18px">A research demonstrator by Kita — PressPlay demonstrator №1.<br>
+        Unofficial; unaffiliated with WIRED. Source article © Condé Nast, quoted with attribution.<br>
+        <a href="https://github.com/sebvasquez91/chokepoint" target="_blank" rel="noopener">Full pipeline &amp; source on GitHub</a></p>
+    </div>
+  </main>
+</body>
+</html>
