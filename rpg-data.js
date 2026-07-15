@@ -156,11 +156,11 @@ window.RPG_DATA = (function () {
       ],
       npcs: [],
       triggers: [
-        { type: "interact", x: 3, y: 5, dialog: "ny_pack" },
-        { type: "interact", x: 1, y: 2, w: 2, dialog: "ny_phone" },
-        { type: "interact", x: 8, y: 2, w: 3, dialog: "ny_podcast" },
-        { type: "walk", x: 5, y: 7, dialog: "ny_door", if: { notFlag: "ny_ready" } },
-        { type: "walk", x: 5, y: 7, fx: { cutscene: "flight" }, if: { flag: "ny_ready" } }
+        { type: "interact", x: 3, y: 5, dialog: "ny_pack", label: "the suitcase" },
+        { type: "interact", x: 1, y: 2, w: 2, dialog: "ny_phone", label: "the phone" },
+        { type: "interact", x: 8, y: 2, w: 3, dialog: "ny_podcast", label: "the podcast" },
+        { type: "walk", x: 5, y: 7, dialog: "ny_door", marker: "exit", if: { notFlag: "ny_ready" } },
+        { type: "walk", x: 5, y: 7, fx: { cutscene: "flight" }, marker: "exit", if: { flag: "ny_ready" } }
       ],
       hints: [
         { t: "Pack the case. Take the calls.", if: { notFlag: "ny_ready" } },
@@ -237,7 +237,7 @@ window.RPG_DATA = (function () {
         { type: "label", x: 14, y: 10, text: "to HSINCHU →", color: "#d9a441" }
       ],
       npcs: [
-        { id: "newsstand", look: "worker_m", x: 18.5, y: 10.6, facing: "down", dialogs: [{ id: "newsstand" }] }
+        { id: "newsstand", look: "worker_m", name: "the news-stand", x: 18.5, y: 10.6, facing: "down", dialogs: [{ id: "newsstand" }] }
       ],
       triggers: [
         { type: "walk", x: 2, y: 3, dialog: "hotel_enter_router" },
@@ -246,8 +246,8 @@ window.RPG_DATA = (function () {
         { type: "walk", x: 13, y: 3, goto: { s: "street", x: 13, y: 4 }, if: { flag: "___never" } },
         { type: "walk", x: 17, y: 3, dialog: "starbucks_router" },
         { type: "walk", x: 22, y: 3, dialog: "seven_router" },
-        { type: "interact", x: 26, y: 3, dialog: "tv_window", if: { flag: "met_kramer" } },
-        { type: "interact", x: 26, y: 3, dialog: "tv_early", if: { notFlag: "met_kramer" } },
+        { type: "interact", x: 26, y: 3, dialog: "tv_window", label: "the TV", if: { flag: "met_kramer" } },
+        { type: "interact", x: 26, y: 3, dialog: "tv_early", label: "the TV", if: { notFlag: "met_kramer" } },
         { type: "walk", x: 14, y: 13, dialog: "train_router" }
       ],
       hints: [
@@ -283,10 +283,10 @@ window.RPG_DATA = (function () {
       ],
       npcs: [],
       triggers: [
-        { type: "interact", x: 8, y: 4, dialog: "phone_router" },
-        { type: "interact", x: 1, y: 3, w: 2, dialog: "bed_router" },
-        { type: "interact", x: 7, y: 3, dialog: "desk_notes" },
-        { type: "interact", x: 11, y: 6, dialog: "case_back", if: { flag: "luggage_back" } },
+        { type: "interact", x: 8, y: 4, dialog: "phone_router", label: "the phone" },
+        { type: "interact", x: 1, y: 3, w: 2, dialog: "bed_router", label: "the bed" },
+        { type: "interact", x: 7, y: 3, dialog: "desk_notes", label: "your notebook" },
+        { type: "interact", x: 11, y: 6, dialog: "case_back", label: "your Samsonite", if: { flag: "luggage_back" } },
         { type: "walk", x: 7, y: 8, goto: { s: "street", x: 2, y: 4, f: "down" } }
       ],
       hints: [
@@ -439,7 +439,7 @@ window.RPG_DATA = (function () {
       ],
       triggers: [
         { type: "walk", x: 11, y: 6, dialog: "hq_enter_router" },
-        { type: "walk", x: 11, y: 9, dialog: "umc_door" },
+        { type: "interact", x: 11, y: 9, dialog: "umc_door", label: "UMC, the rival" },
         { type: "walk", x: 1, y: 4, h: 3, goto: { s: "train", x: 6, y: 6, f: "up" }, if: { notFlag: "tour_day" } },
         { type: "walk", x: 1, y: 4, h: 3, dialog: "no_return_tour", if: { flag: "tour_day" } }
       ],
@@ -500,8 +500,8 @@ window.RPG_DATA = (function () {
         }
       ],
       triggers: [
-        { type: "interact", x: 17, y: 9, dialog: "ship_look", if: { flag: "liu_done" } },
-        { type: "interact", x: 2, y: 1, w: 3, dialog: "poster_air" },
+        { type: "interact", x: 17, y: 9, dialog: "ship_look", label: "the trophy ship", if: { flag: "liu_done" } },
+        { type: "interact", x: 2, y: 1, w: 3, dialog: "poster_air", label: "the framed photo" },
         { type: "walk", x: 6, y: 11, goto: { s: "park", x: 11, y: 7, f: "down" } },
         { type: "walk", x: 20, y: 7, goto: { s: "uni", x: 7, y: 7, f: "up" }, if: { flag: "liu_done" } },
         { type: "walk", x: 20, y: 7, dialog: "uni_locked", if: { notFlag: "liu_done" } }
@@ -684,8 +684,8 @@ window.RPG_DATA = (function () {
         { id: "kramer_ante", look: "kramer", x: 2, y: 3.4, facing: "right", dialogs: [{ id: "kramer_ante" }] }
       ],
       triggers: [
-        { type: "interact", x: 4, y: 2, dialog: "turnstile", if: { notFlag: "turnstiled" } },
-        { type: "interact", x: 8, y: 2, dialog: "wash_intro", if: { flag: "turnstiled", notFlag: "washed" } },
+        { type: "interact", x: 4, y: 2, dialog: "turnstile", label: "the turnstile", if: { notFlag: "turnstiled" } },
+        { type: "interact", x: 8, y: 2, dialog: "wash_intro", label: "the wash machine", if: { flag: "turnstiled", notFlag: "washed" } },
         { type: "walk", x: 9, y: 5, goto: { s: "fab", x: 2, y: 6, f: "right" }, if: { outfit: "bunny" } },
         { type: "walk", x: 9, y: 5, dialog: "ante_not_ready", if: { notFlag: "___x", outfit: "arrive" } },
         { type: "walk", x: 9, y: 5, dialog: "ante_not_ready", if: { outfit: "mall" } }
@@ -721,9 +721,9 @@ window.RPG_DATA = (function () {
       ],
       triggers: [
         { type: "walk", x: 2, y: 5, w: 2, h: 2, dialog: "fab_enterlight", once: true, flag: "fablight" },
-        { type: "interact", x: 3, y: 2, w: 3, dialog: "fab_machines" },
-        { type: "interact", x: 11, y: 5, w: 3, dialog: "fab_litho" },
-        { type: "interact", x: 16, y: 8, w: 3, dialog: "fab_incubators" },
+        { type: "interact", x: 3, y: 2, w: 3, dialog: "fab_machines", label: "the machines" },
+        { type: "interact", x: 11, y: 5, w: 3, dialog: "fab_litho", label: "the lithography machine" },
+        { type: "interact", x: 16, y: 8, w: 3, dialog: "fab_incubators", label: "the far machines" },
         { type: "walk", x: 13, y: 10, dialog: "fab_exit_router" }
       ],
       hints: []

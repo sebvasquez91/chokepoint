@@ -743,6 +743,7 @@
   // touch controls
   function bindTouch() {
     if (!("ontouchstart" in window)) { ui.touch.classList.add("hidden"); return; }
+    state.touch = true;
     ui.touch.classList.remove("hidden");
     ui.touch.querySelectorAll("[data-dir]").forEach((b) => {
       const dir = b.getAttribute("data-dir");
@@ -755,33 +756,109 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* World interaction                                                    */
-  function interact() {
-    const fx = state.facing;
-    const cx = state.px + 6, cy = state.py + 8;
-    const rx = cx + (fx === "left" ? -14 : fx === "right" ? 14 : 0);
-    const ry = cy + (fx === "up" ? -14 : fx === "down" ? 14 : 0);
-    // NPCs
+  /* World interaction & affordances                                      */
+  const ACT_RANGE = 30; // px (world) — press-to-act radius AND prompt range
+
+  function shortName(s) { return (s || "").split(" — ")[0].split(" (")[0].trim(); }
+  let _lookName = null;
+  function lookToName() {
+    if (_lookName) return _lookName;
+    _lookName = {};
+    for (const k in S.cast) { const c = S.cast[k]; if (c.look && !_lookName[c.look]) _lookName[c.look] = shortName(c.name); }
+    return _lookName;
+  }
+  function npcName(n) { return n.name || lookToName()[n.look] || "someone"; }
+
+  // classify a trigger into a visible affordance: talk | look | exit | null(ambient)
+  function triggerKind(tr) {
+    if (tr.marker) return tr.marker === "none" ? null : tr.marker;
+    if (tr.type === "interact") return "look";
+    if (tr.goto) return "exit";
+    if (tr.dialog && /router/i.test(tr.dialog)) return "exit";
+    return null; // ambient walk trigger — fires by itself, no cue needed
+  }
+
+  // build the list of currently-available interactables in the scene
+  function sceneInteractables() {
+    const list = [], seen = {};
     for (const n of state.entities) {
-      const nx = n.x * TILE + 6, ny = n.y * TILE + 8;
-      if (Math.abs(nx - cx) < 22 && Math.abs(ny - cy) < 22) {
-        n.facePlayer = true;
-        const d = (n.dialogs || []).find((dd) => !dd.if || checkReq(dd.if));
-        if (d) { startDialog(d.id); return; }
-      }
+      if (n.if && !checkReq(n.if)) continue;
+      if (!(n.dialogs || []).some((dd) => !dd.if || checkReq(dd.if))) continue;
+      const nm = npcName(n);
+      list.push({ kind: "talk", cx: n.x * TILE + 6, top: n.y * TILE, ay: n.y * TILE + 8, feetY: n.y * TILE + 15, phase: (n.x + n.y) % 6, prompt: nm === "someone" ? "Talk" : "Talk to " + nm, ent: n });
     }
-    // triggers (interactable props)
     for (const tr of (state.scene.triggers || [])) {
-      if (tr.type !== "interact") continue;
-      if (!tr.if || checkReq(tr.if)) {
-        const tx = (tr.x + (tr.w || 1) / 2) * TILE, ty = (tr.y + (tr.h || 1) / 2) * TILE;
-        if (Math.abs(tx - rx) < 18 && Math.abs(ty - ry) < 18) {
-          if (tr.dialog) startDialog(tr.dialog);
-          if (tr.fx) applyFx(tr.fx);
-          return;
-        }
-      }
+      if (tr.if && !checkReq(tr.if)) continue;
+      const kind = triggerKind(tr); if (!kind) continue;
+      const key = tr.x + "_" + tr.y, w = tr.w || 1, h = tr.h || 1;
+      const item = {
+        kind, cx: (tr.x + w / 2) * TILE, top: tr.y * TILE, ay: (tr.y + h / 2) * TILE,
+        feetY: (tr.y + h) * TILE - 2, phase: (tr.x + tr.y) % 6,
+        prompt: kind === "look" ? (tr.label ? "Examine " + tr.label : "Examine") : (tr.label ? "Go — " + tr.label : "Exit"), tr
+      };
+      if (seen[key]) { if (kind === "look" && seen[key].kind === "exit") { list[list.indexOf(seen[key])] = item; seen[key] = item; } continue; }
+      seen[key] = item; list.push(item);
     }
+    return list;
+  }
+
+  // nearest press-interactable (talk/look — not exits, which fire on walk-in)
+  function nearestFrom(acts) {
+    const cx = state.px + 6, cy = state.py + 8; let best = null, bd = ACT_RANGE;
+    for (const it of acts) { if (it.kind === "exit") continue; const d = Math.hypot(it.cx - cx, it.ay - cy); if (d < bd) { bd = d; best = it; } }
+    return best;
+  }
+
+  function interact() {
+    const it = state._near || nearestFrom(sceneInteractables());
+    if (!it) return;
+    if (it.kind === "talk") {
+      it.ent.facePlayer = true;
+      const d = (it.ent.dialogs || []).find((dd) => !dd.if || checkReq(dd.if));
+      if (d) startDialog(d.id);
+      return;
+    }
+    if (it.tr.dialog) startDialog(it.tr.dialog);
+    if (it.tr.fx) applyFx(it.tr.fx);
+  }
+
+  /* affordance drawing (screen-space; called from render) */
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function drawRing(sx, sy) {
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 260);
+    ctx.save(); ctx.globalAlpha = 0.22 + 0.4 * pulse; ctx.strokeStyle = "#d9a441"; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(sx, sy, 7.5, 3.6, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+  function drawMarker(mx, my, kind, emph, phase) {
+    const y = my - 3 - Math.sin(performance.now() / 300 + phase) * 1.6;
+    const s = emph ? 1.18 : 1;
+    ctx.save();
+    ctx.globalAlpha = 0.5; ctx.fillStyle = "#05070c";
+    ctx.beginPath(); ctx.ellipse(mx, y, 6.4 * s, 5.4 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    if (kind === "talk") {
+      ctx.fillStyle = emph ? "#ffd177" : "#d9a441";
+      rr(mx - 4 * s, y - 4 * s, 8 * s, 6 * s, 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(mx - 1.5, y + 2 * s); ctx.lineTo(mx + 2, y + 2 * s); ctx.lineTo(mx - 1.5, y + 4.5 * s); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#1d2330"; for (let i = -1; i <= 1; i++) ctx.fillRect(Math.round(mx - 0.5 + i * 2.2), Math.round(y - 1), 1, 1);
+    } else if (kind === "look") {
+      ctx.strokeStyle = emph ? "#c9bcff" : "#a08df5"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(mx - 1, y - 1, 2.7 * s, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mx + 1, y + 1); ctx.lineTo(mx + 3.2, y + 3.2); ctx.stroke();
+    } else {
+      ctx.fillStyle = emph ? "#a6ecc7" : "#7ec8a2";
+      ctx.beginPath(); ctx.moveTo(mx - 3.2, y - 2.5); ctx.lineTo(mx + 3.2, y - 2.5); ctx.lineTo(mx, y + 1); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(mx - 3.2, y + 0.8); ctx.lineTo(mx + 3.2, y + 0.8); ctx.lineTo(mx, y + 4.3); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function updatePrompt(it) {
+    const p = document.getElementById("prompt");
+    if (!p) return;
+    if (!it) { p.classList.add("hidden"); return; }
+    const key = state.touch ? "Ⓐ" : "E";
+    p.innerHTML = `<span class="pk">${key}</span><span>${it.prompt}</span>`;
+    p.classList.remove("hidden");
   }
 
   function tryMove(dx, dy, dt) {
@@ -847,16 +924,19 @@
       if (p.if && !checkReq(p.if)) continue;
       D.props[p.type](ctx, p.x * TILE - camX, p.y * TILE - camY, p);
     }
+    // interactable affordances (computed once per frame)
+    const play = state.mode === "play";
+    const acts = play ? sceneInteractables() : [];
+    const near = play ? nearestFrom(acts) : null;
+    state._acts = acts; state._near = near;
+    if (near && near.kind === "talk") near.ent.facePlayer = true;
+    if (near) drawRing(near.cx - camX, near.feetY - camY);
     // entities + player, y-sorted
     const drawList = state.entities.filter((n) => !n.if || checkReq(n.if)).map((n) => ({
       y: n.y * TILE, draw: () => {
         const f = n.facePlayer ? faceToPlayer(n) : (n.facing || "down");
         const fr = n.walking ? (Math.floor(performance.now() / 180) % 2) : 0;
         ctx.drawImage(sprite(n.look, f, fr), Math.round(n.x * TILE) - camX, Math.round(n.y * TILE) - camY);
-        if (nearestTalkable() === n && state.mode === "play") {
-          ctx.fillStyle = "#d9a441";
-          ctx.fillRect(Math.round(n.x * TILE) - camX + 4, Math.round(n.y * TILE) - camY - 6, 4, 4);
-        }
       }
     }));
     drawList.push({
@@ -866,6 +946,13 @@
       }
     });
     drawList.sort((a, b) => a.y - b.y).forEach((d) => d.draw());
+
+    // floating interaction markers (above sprites)
+    for (const it of acts) {
+      const mx = Math.round(it.cx - camX), my = Math.round(it.top - camY);
+      if (mx < -10 || mx > canvas.width + 10 || my < -10 || my > canvas.height + 10) continue;
+      drawMarker(mx, my, it.kind, it === near, it.phase);
+    }
 
     // mood overlay
     const moods = {
@@ -880,6 +967,7 @@
       g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(255,250,235,0.22)");
       ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+    updatePrompt(near);
   }
   function faceToPlayer(n) {
     const dx = state.px - n.x * TILE, dy = state.py - n.y * TILE;
@@ -919,7 +1007,7 @@
     if (state.mode === "minigame") tickMinigame(dt);
     if (state.mode !== "title" && state.mode !== "epilogue") {
       try { render(); } catch (e) { console.error("render error", e); }
-    }
+    } else { const p = document.getElementById("prompt"); if (p) p.classList.add("hidden"); }
   }
   function frame(now) { loop(now); requestAnimationFrame(frame); }
   // hidden-tab fallback: keep ticking when rAF is throttled/paused
