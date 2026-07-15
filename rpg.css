@@ -66,10 +66,18 @@ a { color: var(--violet); }
 .dlg-chips { display: flex; gap: 5px; flex-wrap: wrap; }
 .dlg-choices { display: grid; gap: 7px; }
 .dlg-choice {
-  text-align: left; background: var(--panel); border: 1px solid var(--line); color: var(--ink);
-  border-radius: 9px; padding: 10px 12px; font-size: 14.5px; cursor: pointer;
+  position: relative; text-align: left; background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+  border-radius: 9px; padding: 10px 12px 10px 26px; font-size: 14.5px; cursor: pointer;
 }
-.dlg-choice:hover, .dlg-choice:focus-visible { border-color: var(--violet); }
+.dlg-choice::before {
+  content: "▸"; position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  color: transparent; font-size: 12px; transition: color .1s ease;
+}
+.dlg-choice:focus-visible { outline: none; }
+.dlg-choice.sel {
+  border-color: var(--violet); background: rgba(160, 141, 245, .14); box-shadow: 0 0 0 1px var(--violet);
+}
+.dlg-choice.sel::before { color: var(--violet); }
 .dlg-choice.chab { border-style: dashed; color: var(--dim); }
 
 .chip {

@@ -370,7 +370,22 @@
           </div>
         </div>
       </div>`;
-    ui.dialog.querySelector(".dlg-choice").focus();
+    const first = ui.dialog.querySelector(".dlg-choice");
+    if (first) { first.classList.add("sel"); first.focus(); }
+  }
+  function moveChoice(delta) {
+    const chs = [...ui.dialog.querySelectorAll(".dlg-choice")];
+    if (chs.length < 2) return;
+    let sel = chs.findIndex((b) => b.classList.contains("sel"));
+    if (sel < 0) sel = 0;
+    sel = (sel + delta + chs.length) % chs.length;
+    chs.forEach((b, i) => b.classList.toggle("sel", i === sel));
+    chs[sel].focus();
+    blip(560, 0.02);
+  }
+  function takeChoice() {
+    const sel = ui.dialog.querySelector(".dlg-choice.sel") || ui.dialog.querySelector(".dlg-choice");
+    if (sel) sel.click();
   }
   function pickChoice(idx) {
     const c = state.dlg.node.choices[idx];
@@ -709,9 +724,16 @@
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { closeSheet(); if (state.mode === "panel") closePanel(); return; }
     if (state.mode === "dialog") {
-      if (["Enter", " ", "e", "E"].includes(e.key)) { e.preventDefault(); if (!ui.dialog.querySelector(".dlg-choice")) advanceDialog(); }
+      const k = e.key.toLowerCase();
       const chs = [...ui.dialog.querySelectorAll(".dlg-choice")];
-      if (chs.length && /^[1-9]$/.test(e.key)) { const i = +e.key - 1; if (chs[i]) chs[i].click(); }
+      if (chs.length) {
+        if (["arrowdown", "arrowright", "s"].includes(k)) { e.preventDefault(); moveChoice(1); return; }
+        if (["arrowup", "arrowleft", "w"].includes(k)) { e.preventDefault(); moveChoice(-1); return; }
+        if (["enter", " ", "e"].includes(k)) { e.preventDefault(); takeChoice(); return; }
+        if (/^[1-9]$/.test(e.key)) { const i = +e.key - 1; if (chs[i]) chs[i].click(); return; }
+        return;
+      }
+      if (["Enter", " ", "e", "E"].includes(e.key)) { e.preventDefault(); advanceDialog(); }
       return;
     }
     if (state.mode !== "play") return;
@@ -747,13 +769,31 @@
     ui.touch.classList.remove("hidden");
     ui.touch.querySelectorAll("[data-dir]").forEach((b) => {
       const dir = b.getAttribute("data-dir");
-      const on = (e) => { e.preventDefault(); keys["touch_" + dir] = true; };
+      const on = (e) => {
+        e.preventDefault();
+        if (state.mode === "dialog" && ui.dialog.querySelector(".dlg-choice")) {
+          if (dir === "up") moveChoice(-1); else if (dir === "down") moveChoice(1);
+          return;
+        }
+        keys["touch_" + dir] = true;
+      };
       const off = (e) => { e.preventDefault(); keys["touch_" + dir] = false; };
       b.addEventListener("touchstart", on); b.addEventListener("touchend", off); b.addEventListener("touchcancel", off);
     });
     const a = ui.touch.querySelector("[data-a]");
-    a.addEventListener("touchstart", (e) => { e.preventDefault(); audioInit(); if (state.mode === "dialog") advanceDialog(); else if (state.mode === "play") interact(); });
+    a.addEventListener("touchstart", (e) => {
+      e.preventDefault(); audioInit();
+      if (state.mode === "dialog") { if (ui.dialog.querySelector(".dlg-choice")) takeChoice(); else advanceDialog(); }
+      else if (state.mode === "play") interact();
+    });
   }
+  // mouse: hovering a choice selects it (keeps pointer + keyboard in sync)
+  document.addEventListener("mousemove", (e) => {
+    if (state.mode !== "dialog") return;
+    const b = e.target.closest && e.target.closest(".dlg-choice");
+    if (!b) return;
+    ui.dialog.querySelectorAll(".dlg-choice").forEach((x) => x.classList.toggle("sel", x === b));
+  });
 
   /* ------------------------------------------------------------------ */
   /* World interaction & affordances                                      */
