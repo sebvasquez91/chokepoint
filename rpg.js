@@ -752,7 +752,7 @@
     const chip = t.closest("[data-receipts]"); if (chip) { openReceipts(chip.getAttribute("data-receipts").split(",")); return; }
     if (t.closest("[data-close-sheet]") || t.id === "sheet") { closeSheet(); return; }
     if (t.closest("[data-mute]")) { toggleMute(); if (state.mode === "title") showTitle(); else openPanel("about"); return; }
-    if (t.closest("[data-newgame]")) { localStorage.removeItem("ck_save"); newGame(); return; }
+    if (t.closest("[data-newgame]")) { localStorage.removeItem("ck_save"); showIntro(); return; }
     if (t.closest("[data-continue]")) { ui.panels.classList.add("hidden"); ui.panels.innerHTML = ""; state.mode = "play"; loadSave(); return; }
     if (t.closest("[data-restart]")) { localStorage.removeItem("ck_save"); location.reload(); return; }
     const op = t.closest("[data-open-panel]"); if (op) { openPanel(op.getAttribute("data-open-panel")); return; }
@@ -1052,6 +1052,140 @@
   function frame(now) { loop(now); requestAnimationFrame(frame); }
   // hidden-tab fallback: keep ticking when rAF is throttled/paused
   setInterval(() => { if (performance.now() - lastFrame > 300) loop(performance.now()); }, 150);
+
+  /* ------------------------------------------------------------------ */
+  /* Intro — animated cold-open shown before a new game                   */
+  function introVisual(b) {
+    const v = b.visual;
+    if (v === "chip") {
+      let pins = "";
+      for (let i = 0; i < 5; i++) { const p = 30 + i * 15;
+        pins += `<line x1="${p}" y1="18" x2="${p}" y2="30" /><line x1="${p}" y1="90" x2="${p}" y2="102" />`;
+        pins += `<line x1="18" y1="${p}" x2="30" y2="${p}" /><line x1="90" y1="${p}" x2="102" y2="${p}" />`;
+      }
+      return `<svg viewBox="0 0 120 120" class="iv" aria-hidden="true">
+        <g class="iv-pins" stroke="var(--gold)" stroke-width="2" stroke-linecap="round">${pins}</g>
+        <rect x="30" y="30" width="60" height="60" rx="7" fill="#0f1420" stroke="var(--violet)" stroke-width="2"/>
+        <path class="iv-trace" d="M45 45 H75 V60 H52 V75 H75" fill="none" stroke="var(--violet)" stroke-width="1.5" opacity=".7"/>
+        <rect class="iv-core" x="50" y="50" width="20" height="20" rx="3" fill="var(--gold)"/>
+      </svg>`;
+    }
+    if (v === "counter") {
+      const circ = 2 * Math.PI * 52, off = circ * (1 - (b.count || 92) / 100);
+      let dots = "";
+      for (let y = 20; y <= 100; y += 12) for (let x = 20; x <= 100; x += 12) {
+        if (Math.hypot(x - 60, y - 60) < 46) dots += `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" rx="1" fill="#1b2233"/>`;
+      }
+      return `<div class="iv-counter">
+        <svg viewBox="0 0 120 120" class="iv" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" fill="#0b0e15" stroke="var(--line)" stroke-width="2"/>
+          ${dots}
+          <circle class="iv-arc" cx="60" cy="60" r="52" fill="none" stroke="var(--violet)" stroke-width="4"
+            stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" style="--arc-from:${circ.toFixed(1)};--arc-to:${off.toFixed(1)}"/>
+        </svg>
+        <div class="iv-num"><span data-count="${b.count}" data-suffix="${b.suffix || ""}" aria-label="${b.count}${b.suffix || ""}">0${b.suffix || ""}</span></div>
+      </div>`;
+    }
+    if (v === "shield") {
+      return `<svg viewBox="0 0 160 120" class="iv" aria-hidden="true">
+        <path d="M0 24 H54 V96 H0 Z" fill="#131826" stroke="var(--line)"/>
+        <text x="20" y="18" fill="var(--dim)" font-size="9" font-family="Georgia">mainland</text>
+        <line class="iv-strait" x1="56" y1="60" x2="96" y2="60" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text x="60" y="52" fill="var(--gold)" font-size="9" font-family="Georgia">110 mi</text>
+        <path d="M104 44 q18 -8 34 6 q10 20 -6 44 q-24 12 -40 -8 q-8 -30 12 -42 Z" fill="#1a2030" stroke="var(--violet)" stroke-width="1.5"/>
+        <path class="iv-shield" d="M121 52 l16 5 v12 q0 14 -16 22 q-16 -8 -16 -22 v-12 Z" fill="rgba(160,141,245,.16)" stroke="var(--violet)" stroke-width="1.5"/>
+        <circle class="iv-ping" cx="121" cy="72" r="4" fill="var(--gold)"/>
+      </svg>`;
+    }
+    if (v === "umbrella") {
+      const umb = (x, gold) => `<g transform="translate(${x},34)" stroke="${gold ? "var(--gold)" : "#3a4152"}" stroke-width="2" fill="none" opacity="${gold ? 1 : .55}" class="${gold ? "iv-umb-gold" : ""}">
+        <path d="M-14 8 A14 14 0 0 1 14 8 Z" fill="${gold ? "rgba(217,164,65,.18)" : "none"}"/><line x1="0" y1="8" x2="0" y2="30"/><path d="M0 30 q0 6 6 6" /></g>`;
+      return `<svg viewBox="0 0 160 120" class="iv" aria-hidden="true">
+        ${umb(26, false)}${umb(60, true)}${umb(94, false)}
+        <path class="iv-arrow" d="M118 46 H140 M134 40 L140 46 L134 52" stroke="var(--violet)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <rect x="126" y="60" width="24" height="24" rx="3" fill="#0f1420" stroke="var(--violet)" stroke-width="2"/>
+        <rect x="132" y="66" width="12" height="12" rx="2" fill="var(--gold)" class="iv-core"/>
+      </svg>`;
+    }
+    // pilgrim / fab
+    return `<svg viewBox="0 0 160 120" class="iv" aria-hidden="true">
+      <path d="M6 100 L48 40 L74 74 L96 48 L154 100 Z" fill="#12151c" stroke="var(--line)"/>
+      <rect x="60" y="70" width="40" height="30" fill="#0b0e15" stroke="var(--violet)" stroke-width="1.5"/>
+      <rect class="iv-door" x="74" y="78" width="12" height="22" fill="var(--gold)" opacity=".85"/>
+      <g class="iv-figure" fill="var(--ink)"><rect x="66" y="84" width="4" height="9"/><rect x="66" y="80" width="4" height="3"/></g>
+      <circle class="iv-ping" cx="80" cy="60" r="3" fill="var(--gold)"/>
+    </svg>`;
+  }
+
+  function countUp(elm) {
+    const target = +elm.getAttribute("data-count"), suffix = elm.getAttribute("data-suffix") || "";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { elm.textContent = target + suffix; return; }
+    const t0 = performance.now(), dur = 950;
+    // setInterval (not rAF) so it still completes when the tab is backgrounded
+    const iv = setInterval(() => {
+      if (!document.body.contains(elm)) { clearInterval(iv); return; }
+      const p = Math.min(1, (performance.now() - t0) / dur);
+      elm.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
+      if (p >= 1) clearInterval(iv);
+    }, 40);
+  }
+
+  function showIntro() {
+    const beats = S.intro || [];
+    if (!beats.length) { newGame(); return; }
+    const host = document.getElementById("intro");
+    ui.panels.classList.add("hidden"); ui.panels.innerHTML = "";
+    ui.hud.classList.add("hidden");
+    host.classList.remove("hidden");
+    let i = 0;
+
+    function renderBeat() {
+      const b = beats[i];
+      host.innerHTML = `
+        <div class="intro-bg" aria-hidden="true"></div>
+        <div class="intro-stage">
+          <div class="intro-top">
+            <span class="intro-brand">CHOKEPOINT</span>
+            <button class="intro-skip" data-intro="skip">Skip intro →</button>
+          </div>
+          <div class="intro-panel" data-k="${i}">
+            <div class="intro-visual">${introVisual(b)}</div>
+            ${b.kicker ? `<p class="intro-kicker">${b.kicker}</p>` : ""}
+            <h2 class="intro-title">${b.title}</h2>
+            <p class="intro-body">${b.body}</p>
+            ${b.receipts ? `<div class="intro-receipts"><span class="intro-src">from the article:</span> ${receiptChipsHtml(b.receipts)}</div>` : ""}
+          </div>
+          <div class="intro-foot">
+            <div class="intro-dots" aria-hidden="true">${beats.map((_, k) => `<span class="${k === i ? "on" : k < i ? "done" : ""}"></span>`).join("")}</div>
+            <button class="intro-next" data-intro="next">${b.last ? "Begin ›" : "Continue"}</button>
+          </div>
+        </div>`;
+      const stat = host.querySelector("[data-count]"); if (stat) countUp(stat);
+      const nx = host.querySelector(".intro-next"); if (nx) nx.focus();
+    }
+    function advance() { if (i < beats.length - 1) { i++; renderBeat(); } else finish(); }
+    function back() { if (i > 0) { i--; renderBeat(); } }
+    function finish() { teardown(); newGame(); }
+    function teardown() {
+      host.classList.add("hidden"); host.innerHTML = "";
+      window.removeEventListener("keydown", onKey);
+      host.removeEventListener("click", onClick);
+    }
+    function onKey(e) {
+      if (["Enter", " ", "ArrowRight"].includes(e.key)) { e.preventDefault(); advance(); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); back(); }
+      else if (e.key === "Escape") { e.preventDefault(); finish(); }
+    }
+    function onClick(e) {
+      const a = e.target.closest("[data-intro]");
+      if (a) { a.getAttribute("data-intro") === "skip" ? finish() : advance(); return; }
+      if (e.target.closest("[data-receipts]")) return; // let receipts open, don't advance
+      advance();
+    }
+    window.addEventListener("keydown", onKey);
+    host.addEventListener("click", onClick);
+    renderBeat();
+  }
 
   /* ------------------------------------------------------------------ */
   /* Boot                                                                 */

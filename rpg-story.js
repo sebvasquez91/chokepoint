@@ -912,10 +912,49 @@ window.RPG_STORY = (function () {
 
   const startScene = { s: "ny", x: 5, y: 5, f: "down" };
 
+  /* ---------------- intro (animated cold-open; sets up the premise) ---- */
+  const intro = [
+    {
+      visual: "chip",
+      kicker: "A true story about the thing in your pocket",
+      title: "It all runs on a chip",
+      body: "Your phone. Your car. The banks, the power grid, the missiles. All of it thinks with fingernail-sized slabs of etched silicon — the most intricate objects humans have ever made."
+    },
+    {
+      visual: "counter", count: 92, suffix: "%",
+      kicker: "One island. One company.",
+      title: "And almost all of them come from here",
+      body: "A single company — TSMC, on the island of Taiwan — makes about 92% of the world's most advanced chips. If it ever stopped, the modern world would seize up overnight.",
+      receipts: ["P002_92"]
+    },
+    {
+      visual: "shield",
+      kicker: "Which makes it the most watched real estate on Earth",
+      title: "The Silicon Shield",
+      body: "Taiwan sits 110 miles from a far larger neighbour that claims it. But the island is so essential that seizing it would destroy the very thing worth taking. Indispensable — and, so far, untouched.",
+      receipts: ["P004_strait", "P015_shield"]
+    },
+    {
+      visual: "umbrella",
+      kicker: "It wasn't always this way",
+      title: "From umbrellas to the world's brain",
+      body: "Fifty years ago Taiwan was poor — it made three of every four umbrellas on Earth. Then it made a deliberate choice: become the one thing nobody could afford to lose.",
+      receipts: ["P059_umbrella", "P060_invaluable"]
+    },
+    {
+      visual: "pilgrim",
+      kicker: "In 2023, a reporter talked her way inside",
+      title: "Your pilgrimage",
+      body: "No journalist had ever toured the secret, almost sacred factories where this happens. One finally got in. You're about to retrace her steps — and understand how a small island came to hold up the world.",
+      receipts: ["P018_wired"],
+      last: true
+    }
+  ];
+
   /* stats: count verbatim lines */
   let verbatim = 0;
   Object.values(dialogs).forEach((d) => Object.values(d.nodes).forEach((n) => (n.lines || []).forEach((l) => { if (l.v) verbatim++; })));
   const stats = { verbatim };
 
-  return { article, cast, receipts, insights, pillarGoals, quests, items, dialogs, cutscenes, minigameFx, aboutWhat, aboutRules, aboutWhatWasReal, engineLine, startScene, stats };
+  return { article, cast, receipts, insights, pillarGoals, quests, items, dialogs, cutscenes, minigameFx, aboutWhat, aboutRules, aboutWhatWasReal, engineLine, startScene, intro, stats };
 })();

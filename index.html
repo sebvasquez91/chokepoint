@@ -10,7 +10,7 @@
   <meta property="og:description" content="A 2D narrative RPG generated from one piece of journalism. Characters, quests and three refusals — every fact carries a ¶ receipt to the article.">
   <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m3 19 6.5-11L13 13l2-3 6 9H3Z' fill='none' stroke='%23d9a441' stroke-width='1.8'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="rpg.css">
+  <link rel="stylesheet" href="rpg.css?v=intro3">
 </head>
 <body>
   <div id="stage"><canvas id="game" width="320" height="208" aria-label="CHOKEPOINT game world"></canvas></div>
@@ -25,6 +25,7 @@
     <button class="abtn" data-a aria-label="Interact">A</button>
   </div>
   <div id="prompt" class="hidden" aria-live="polite"></div>
+  <div id="intro" class="hidden" role="dialog" aria-label="Introduction"></div>
   <div id="dialog" class="hidden" role="log" aria-live="polite"></div>
   <div id="panels" class="hidden"></div>
   <div id="card" aria-live="polite"></div>
@@ -35,8 +36,8 @@
         <a style="color:#a08df5" href="https://www.wired.com/story/i-saw-the-face-of-god-in-a-tsmc-factory/">“I Saw the Face of God in a Semiconductor Factory” — WIRED</a>.</p>
     </div>
   </noscript>
-  <script src="rpg-data.js"></script>
-  <script src="rpg-story.js"></script>
-  <script src="rpg.js"></script>
+  <script src="rpg-data.js?v=intro3"></script>
+  <script src="rpg-story.js?v=intro3"></script>
+  <script src="rpg.js?v=intro3"></script>
 </body>
 </html>
